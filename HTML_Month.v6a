@@ -1,0 +1,154 @@
+#!/usr/local/bin/perl -w
+
+# HTML Calendar by -Sneex-  :]  Of course...
+# Copyright (C) 2000-2001 by WCJones; All Rights Reserved...
+# Version 0.60A -- Turns month of execution into an HTML Table...
+
+# WARNING:  Version 0.50A of this script has binary data in it...
+#           Please d/l and utilize this script instead...
+
+###########################################################################
+#  UPDATE:  You may wish to see the WebTechniques solution created by
+#  Randal L. Schwartz ( merlyn@stonehenge.com ) at -
+#  http://www.stonehenge.com/merlyn/WebTechniques/col66.listing.txt
+###########################################################################
+
+use strict;
+use diagnostics;
+
+my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime; # 0-8 = 9 elements...
+# Returns: seconds, minutes, hour, Day of Month, Month (0-11; Jan=0), 
+# Year (in 00 format; add 1900 to get actual 4 digits), 
+# Day of Week (0-6; Su=0), Day of Year, and Is Daylight Savings Time in effect?
+
+# Project start Year (2000) was a leap year...
+my @days    = qw/ Sunday Monday Tuesday Wednesday Thursday Friday Saturday /;
+my @months  = qw/ January February March April May June July August September October November December /;
+my @mlimits = qw/      31       29    31    30  31   30   31     31        30      31       30       31 /;
+
+# Force a few tests;
+# $mon  = 6;
+# $mday = 1;
+# $wday = 6;
+
+my $cal = "$days[$wday] $months[$mon] $mday, " . ($year + 1900) . " \@ ";
+$cal   .= sprintf("%02d:%02d:%02d", $hour, $min, $sec);
+$cal   .= ($hour < 12) ? " AM": " PM";
+
+my $first = $wday if ($mday == 1); # The First of this Month is on Week Day...
+
+my $indx0 = $mday;
+my $indx1 = $wday;
+unless ($mday == 1) {
+      while ($indx0-- != 1) {
+           $indx1 = 6 if (--$indx1 < 0); # If we were on Sun, reset it as Sat...
+      }
+
+      $first = $indx1; # Then the First of this Month is on this Week Day...
+}
+
+my $filename = $months[$mon] . ($year + 1900);
+open (oFile, ">$filename.html") or die $!;
+
+print oFile<<__HEADS;
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-transitional.dtd">
+<HTML>
+<HEAD>
+    <META HTTP-EQUIV="content-type" CONTENT="text/html;charset=iso-8859-1">
+
+        <TITLE>mod_perl: Months</TITLE>
+
+        <META HTTP-EQUIV=PRAGMA CONTENT=NOCACHE>
+        <META HTTP-EQUIV="Expires" CONTENT="Sat, 16 Nov 1963 20:20:00 EST">
+        <META NAME="generator" CONTENT="BBEdit 6.1.2">
+        <META NAME="creator" CONTENT="PowerPC MacPerl 5.6.1a3, Patchlevel 5.006_01">
+        <META NAME="author" CONTENT="Sneex, IUDICIUM">
+        <META NAME="Description" CONTENT="HTML Template, Home Page, XHTML">
+        <META NAME="Keywords" CONTENT="Sneex, On-line Class, Courseware, Bill Jones, Home Page">
+        <META NAME="Copyright" CONTENT="Copyright (c) 2001 WCJones; All Rights Reserved.">
+        <META NAME="Rating" CONTENT="General">
+        <META NAME="Robots" CONTENT="All">
+
+<link rel="stylesheet" href="calStyles.css"></link>
+</HEAD>
+    <BODY BGCOLOR="#DCDCDC" ALINK="#CCFFFF" VLINK="#4B0082" LINK="#00008B" TEXT="#000000">
+
+<TABLE CLASS="hCalendarTable" CELLSPACING="0" BORDER="0">
+    <TR CLASS="hCalendarMonthYearRow"><TD COLSPAN="7"><DIV CLASS="small"><B>$cal</B></DIV></TD></TR>
+
+__HEADS
+
+print oFile<<_WeekDays_;
+    <TR CLASS="hCalendarDayNameRow">
+    <TD WIDTH="19" HEIGHT="10"><DIV CLASS="realsmall">Sun</DIV></TD>
+    <TD WIDTH="19" HEIGHT="10"><DIV CLASS="realsmall">Mon</DIV></TD>
+    <TD WIDTH="19" HEIGHT="10"><DIV CLASS="realsmall">Tue</DIV></TD>
+    <TD WIDTH="19" HEIGHT="10"><DIV CLASS="realsmall">Wed</DIV></TD>
+    <TD WIDTH="19" HEIGHT="10"><DIV CLASS="realsmall">Thu</DIV></TD>
+    <TD WIDTH="19" HEIGHT="10"><DIV CLASS="realsmall">Fri</DIV></TD>
+    <TD WIDTH="19" HEIGHT="10"><DIV CLASS="realsmall">Sat</DIV></TD>
+    </TR>
+_WeekDays_
+
+my ($Sunday, $Monday, $Tuesday, $Wednesday, $Thursday, $Friday, $Saturday);
+$indx0 = $mlimits[$mon];
+$indx1 = $first;
+
+my $ctr = 1; # Count out the days of yore...
+
+while (1) {
+
+     if (($indx1 == 0) && 
+         ($ctr <= $mlimits[$mon])) { $Sunday    = $ctr++; $indx1 = 0 if (++$indx1 > 6); } else { $Sunday    = ""; }
+
+     if (($indx1 == 1) && 
+         ($ctr <= $mlimits[$mon])) { $Monday    = $ctr++; $indx1 = 0 if (++$indx1 > 6); } else { $Monday    = ""; }
+ 
+     if (($indx1 == 2) && 
+         ($ctr <= $mlimits[$mon])) { $Tuesday   = $ctr++; $indx1 = 0 if (++$indx1 > 6); } else { $Tuesday   = ""; }
+
+     if (($indx1 == 3) && 
+         ($ctr <= $mlimits[$mon])) { $Wednesday = $ctr++; $indx1 = 0 if (++$indx1 > 6); } else { $Wednesday = ""; }
+
+     if (($indx1 == 4) && 
+         ($ctr <= $mlimits[$mon])) { $Thursday  = $ctr++; $indx1 = 0 if (++$indx1 > 6); } else { $Thursday  = ""; }
+
+     if (($indx1 == 5) && 
+         ($ctr <= $mlimits[$mon])) { $Friday    = $ctr++; $indx1 = 0 if (++$indx1 > 6); } else { $Friday    = ""; }
+
+     if (($indx1 == 6) && 
+         ($ctr <= $mlimits[$mon])) { $Saturday  = $ctr++; $indx1 = 0 if (++$indx1 > 6); } else { $Saturday  = ""; }
+
+print oFile<<_EachWeek_;
+    <TR CLASS="hCalendarDayRow">
+    <TD CLASS="hCalendarDay" HEIGHT="10"><DIV CLASS="realsmall"> $Sunday </DIV></TD>
+    <TD CLASS="hCalendarDay"><DIV CLASS="realsmall"> $Monday </DIV></TD>
+    <TD CLASS="hCalendarDay"><DIV CLASS="realsmall"> $Tuesday </DIV></TD>
+    <TD CLASS="hCalendarDay"><DIV CLASS="realsmall"> $Wednesday </DIV></TD>
+    <TD CLASS="hCalendarDay"><DIV CLASS="realsmall"> $Thursday </DIV></TD>
+    <TD CLASS="hCalendarDay"><DIV CLASS="realsmall"> $Friday </DIV></TD>
+    <TD CLASS="hCalendarDay"><DIV CLASS="realsmall"> $Saturday </DIV></TD>
+    </TR>
+_EachWeek_
+
+# Keep:  $indx1 = 0 if (++$indx1 > 6); # Inverse: If we were on Sat, reset it as Sun...
+
+  $indx0 -= 7;
+  last if ($indx0 <= 0);
+} # End of EachWeek while()...
+
+
+# Finish the HTML page...
+print oFile "</TABLE>\n</BODY>\n</HTML>\n";
+
+
+__END__
+
+    October 2001
+ S  M Tu  W Th  F  S
+    1  2  3  4  5  6
+ 7  8  9 10 11 12 13
+14 15 16 17 18 19 20
+21 22 23 24 25 26 27
+28 29 30 31
